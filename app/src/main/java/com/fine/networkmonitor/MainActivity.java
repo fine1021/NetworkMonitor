@@ -4,16 +4,16 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.CompoundButton;
 
 import com.fine.networkmonitor.util.MobileDataControl;
 
 public class MainActivity extends AppCompatActivity {
-
-    private Snackbar snackbar = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,20 +26,21 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (snackbar != null && snackbar.isShown()) {
-                    snackbar.dismiss();
-                } else {
-                    showCurrentStatus(view);
-                }
+                boolean isOpen = MobileDataControl.getMobileDataStatus(view.getContext());
+                String str = String.format("当前数据开关状态：%s", isOpen ? "开启" : "关闭");
+                Snackbar.make(view, str, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
             }
         });
-    }
 
-    private void showCurrentStatus(View view) {
+        SwitchCompat switchCompat = (SwitchCompat) findViewById(R.id.mobileDataSwitch);
+        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                MobileDataControl.setMobileDataStatus(buttonView.getContext(), isChecked);
+            }
+        });
         boolean isOpen = MobileDataControl.getMobileDataStatus(MainActivity.this);
-        String str = String.format("当前数据开关状态：%s", isOpen ? "开启" : "关闭");
-        snackbar = Snackbar.make(view, str, Snackbar.LENGTH_LONG).setAction("Action", null);
-        snackbar.show();
+        switchCompat.setChecked(isOpen);
     }
 
     @Override

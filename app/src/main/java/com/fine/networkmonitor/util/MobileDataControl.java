@@ -10,18 +10,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * @author fine
- * @version 1.0
+ * MobileDataControl
  */
 public class MobileDataControl {
 
     private static String TAG = "MobileDataControl";
 
-    public static void openMobileData(Context context) {
+    public static void setMobileDataStatus(Context context, boolean enabled) {
+        boolean isOpen = getMobileDataStatus(context);
+        if (enabled == isOpen) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            setMobileDataEnabled(context, true);
+            setMobileDataEnabled(context, enabled);
         } else {
-            setDataEnabled(context, true);
+            setDataEnabled(context, enabled);
         }
     }
 
@@ -33,19 +34,12 @@ public class MobileDataControl {
         }
     }
 
-    public static void closeMobileData(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            setMobileDataEnabled(context, false);
-        } else {
-            setDataEnabled(context, false);
-        }
-    }
-
     private static void setMobileDataEnabled(Context context, boolean enabled) {
         ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         try {
             Class<?> cls = manager.getClass();
             Method method = cls.getDeclaredMethod("setMobileDataEnabled", boolean.class);
+            method.setAccessible(true);
             method.invoke(manager, enabled);
             Log.d(TAG, "setMobileDataEnabled success");
         } catch (NoSuchMethodException e) {
@@ -63,6 +57,7 @@ public class MobileDataControl {
         try {
             Class<?> cls = manager.getClass();
             Method method = cls.getDeclaredMethod("getMobileDataEnabled", (Class[]) null);
+            method.setAccessible(true);
             isOpen = (boolean) method.invoke(manager, (Object[]) null);
             Log.d(TAG, "getMobileDataEnabled = " + isOpen);
         } catch (NoSuchMethodException e) {
@@ -75,12 +70,13 @@ public class MobileDataControl {
         return isOpen;
     }
 
-    private static void setDataEnabled(Context context, boolean enable) {
+    private static void setDataEnabled(Context context, boolean enabled) {
         TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         try {
             Class<?> cls = manager.getClass();
             Method method = cls.getDeclaredMethod("setDataEnabled", boolean.class);
-            method.invoke(manager, enable);
+            method.setAccessible(true);
+            method.invoke(manager, enabled);
             Log.d(TAG, "setDataEnabled success");
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
@@ -97,6 +93,7 @@ public class MobileDataControl {
         try {
             Class<?> cls = manager.getClass();
             Method method = cls.getDeclaredMethod("getDataEnabled", (Class[]) null);
+            method.setAccessible(true);
             isOpen = (boolean) method.invoke(manager, (Object[]) null);
             Log.d(TAG, "getDataEnabled = " + isOpen);
         } catch (NoSuchMethodException e) {
