@@ -13,7 +13,7 @@ android {
         }
     }
     defaultConfig {
-        applicationId "com.fine.networkmonitor"
+        applicationId "com.example.fine.networkmonitor"
         minSdkVersion 14
         targetSdkVersion 23
         versionCode 1
@@ -36,4 +36,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.0'
     compile 'com.android.support:design:23.1.0'
+    compile 'com.yxkang.android:support:0.0.5'
 }

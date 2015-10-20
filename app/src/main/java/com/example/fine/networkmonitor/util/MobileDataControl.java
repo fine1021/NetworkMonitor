@@ -1,8 +1,9 @@
-package com.fine.networkmonitor.util;
+package com.example.fine.networkmonitor.util;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Build;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -15,22 +16,30 @@ import java.lang.reflect.Method;
 public class MobileDataControl {
 
     private static String TAG = "MobileDataControl";
+    public static String MOBILE_DATA_CHANGED = "android.intent.action.ANY_DATA_STATE";        // mobile data TelephonyIntents
+    public static String CONNECTIVITY_CHANGED = ConnectivityManager.CONNECTIVITY_ACTION;
 
     public static void setMobileDataStatus(Context context, boolean enabled) {
-        boolean isOpen = getMobileDataStatus(context);
-        if (enabled == isOpen) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             setMobileDataEnabled(context, enabled);
         } else {
-            setDataEnabled(context, enabled);
+            // setDataEnabled(context, enabled);
+            Log.w(TAG, "not supported yet !");
         }
     }
 
     public static boolean getMobileDataStatus(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+
+        /*if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return getMobileDataEnabled(context);
         } else {
             return getDataEnabled(context);
+        }*/
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return Settings.Global.getInt(context.getContentResolver(), "mobile_data", 0) == 1;
+        } else {
+            return Settings.Secure.getInt(context.getContentResolver(), "mobile_data", 0) == 1;
         }
     }
 
@@ -41,7 +50,7 @@ public class MobileDataControl {
             Method method = cls.getDeclaredMethod("setMobileDataEnabled", boolean.class);
             method.setAccessible(true);
             method.invoke(manager, enabled);
-            Log.d(TAG, "setMobileDataEnabled success");
+            Log.d(TAG, "setMobileDataEnabled = " + enabled);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -77,7 +86,7 @@ public class MobileDataControl {
             Method method = cls.getDeclaredMethod("setDataEnabled", boolean.class);
             method.setAccessible(true);
             method.invoke(manager, enabled);
-            Log.d(TAG, "setDataEnabled success");
+            Log.d(TAG, "setDataEnabled = " + enabled);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
