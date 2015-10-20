@@ -28,7 +28,7 @@ public class MonitorService extends Service {
 
     private BroadcastReceiver networkReceiver = new BroadcastReceiver() {
 
-        private boolean isWifi = false;
+        private boolean isWifiConnected = false;
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -40,77 +40,73 @@ public class MonitorService extends Service {
                 switch (type) {
                     case ConnectivityManager.TYPE_WIFI:
                         Log.d(TAG, "TYPE_WIFI");
-                        boolean isOpen = MobileDataControl.getMobileDataStatus(context);
-                        if (isOpen) {
-                            MobileDataControl.setMobileDataStatus(context, false);
-                        }
-                        isWifi = true;
+                        setMobileDataDisable(context);
+                        isWifiConnected = true;
                         break;
                     case ConnectivityManager.TYPE_MOBILE:
                         Log.d(TAG, "TYPE_MOBILE");
-                        isWifi = false;
+                        isWifiConnected = false;
                         break;
                 }
+            } else {
+                isWifiConnected = false;
             }
-            if (isWifi) return;
+            if (isWifiConnected) return;
             int networkType = telephonyManager.getNetworkType();
             switch (networkType) {
                 case TelephonyManager.NETWORK_TYPE_UNKNOWN:
                     Log.d(TAG, "NETWORK_TYPE_UNKNOWN");
+                    setMobileDataDisable(context);
                     break;
                 case TelephonyManager.NETWORK_TYPE_GPRS:
                     Log.d(TAG, "NETWORK_TYPE_GPRS-----2G");
-                    boolean isOpen = MobileDataControl.getMobileDataStatus(context);
-                    if (isOpen) {
-                        MobileDataControl.setMobileDataStatus(context, false);
-                    }
+                    setMobileDataDisable(context);
                     break;
                 case TelephonyManager.NETWORK_TYPE_EDGE:
                     Log.d(TAG, "NETWORK_TYPE_EDGE-----2G");
-                    isOpen = MobileDataControl.getMobileDataStatus(context);
-                    if (isOpen) {
-                        MobileDataControl.setMobileDataStatus(context, false);
-                    }
+                    setMobileDataDisable(context);
                     break;
                 case TelephonyManager.NETWORK_TYPE_UMTS:
-                    Log.d(TAG, "NETWORK_TYPE_UMTS-----Unicom 3G");
+                    Log.d(TAG, "NETWORK_TYPE_UMTS-----WCDMA 3G");
+                    setMobileDataEnable(context);
                     break;
                 case TelephonyManager.NETWORK_TYPE_CDMA:
-                    Log.d(TAG, "NETWORK_TYPE_CDMA-----Telecom 3G");
+                    Log.d(TAG, "NETWORK_TYPE_CDMA-----CDMA 2G");
                     break;
                 case TelephonyManager.NETWORK_TYPE_EVDO_0:
-                    Log.d(TAG, "NETWORK_TYPE_EVDO_0");
+                    Log.d(TAG, "NETWORK_TYPE_EVDO_0-----CDMA2000 1xEV-DO 3G");
                     break;
                 case TelephonyManager.NETWORK_TYPE_EVDO_A:
-                    Log.d(TAG, "NETWORK_TYPE_EVDO_A");
+                    Log.d(TAG, "NETWORK_TYPE_EVDO_A-----3G");
                     break;
                 case TelephonyManager.NETWORK_TYPE_1xRTT:
-                    Log.d(TAG, "NETWORK_TYPE_1xRTT");
+                    Log.d(TAG, "NETWORK_TYPE_1xRTT-----CDMA2000 1xRTT 2G");
                     break;
                 case TelephonyManager.NETWORK_TYPE_HSDPA:
-                    Log.d(TAG, "NETWORK_TYPE_HSDPA-----Mobile 3G");
-                    isOpen = MobileDataControl.getMobileDataStatus(context);
-                    if (!isOpen) {
-                        MobileDataControl.setMobileDataStatus(context, true);
-                    }
+                    Log.d(TAG, "NETWORK_TYPE_HSDPA-----3.5G");
+                    setMobileDataEnable(context);
                     break;
                 case TelephonyManager.NETWORK_TYPE_HSUPA:
-                    Log.d(TAG, "NETWORK_TYPE_HSUPA");
+                    Log.d(TAG, "NETWORK_TYPE_HSUPA-----3.5G");
+                    break;
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                    Log.d(TAG, "NETWORK_TYPE_HSPA-----WCDMA 3G");
+                    setMobileDataEnable(context);
                     break;
                 case TelephonyManager.NETWORK_TYPE_IDEN:
-                    Log.d(TAG, "NETWORK_TYPE_IDEN");
+                    Log.d(TAG, "NETWORK_TYPE_IDEN-----2G");
                     break;
                 case TelephonyManager.NETWORK_TYPE_EVDO_B:
-                    Log.d(TAG, "NETWORK_TYPE_EVDO_B");
+                    Log.d(TAG, "NETWORK_TYPE_EVDO_B-----EV-DO Rev.B 3G");
                     break;
                 case TelephonyManager.NETWORK_TYPE_LTE:
-                    Log.d(TAG, "NETWORK_TYPE_LTE");
+                    Log.d(TAG, "NETWORK_TYPE_LTE-----4G");
                     break;
                 case TelephonyManager.NETWORK_TYPE_EHRPD:
-                    Log.d(TAG, "NETWORK_TYPE_EHRPD");
+                    Log.d(TAG, "NETWORK_TYPE_EHRPD-----3G CDMA2000->LTE");
                     break;
                 case TelephonyManager.NETWORK_TYPE_HSPAP:
-                    Log.d(TAG, "NETWORK_TYPE_HSPAP");
+                    Log.d(TAG, "NETWORK_TYPE_HSPAP-----HSPA+ 3G");
                     break;
 
             }
@@ -127,6 +123,20 @@ public class MonitorService extends Service {
         Intent intent = new Intent(context, MonitorService.class);
         intent.putExtra("flag", enabled ? FLAG_ON : FLAG_OFF);
         context.startService(intent);
+    }
+
+    private void setMobileDataEnable(Context context) {
+        boolean isOpen = MobileDataControl.getMobileDataStatus(context);
+        if (!isOpen) {
+            MobileDataControl.setMobileDataStatus(context, true);
+        }
+    }
+
+    private void setMobileDataDisable(Context context) {
+        boolean isOpen = MobileDataControl.getMobileDataStatus(context);
+        if (isOpen) {
+            MobileDataControl.setMobileDataStatus(context, false);
+        }
     }
 
     @Override
