@@ -15,9 +15,7 @@ import java.lang.reflect.Method;
  */
 public class MobileDataControl {
 
-    private static String TAG = "MobileDataControl";
-    public static String MOBILE_DATA_CHANGED = "android.intent.action.ANY_DATA_STATE";        // mobile data TelephonyIntents
-    public static String CONNECTIVITY_CHANGED = ConnectivityManager.CONNECTIVITY_ACTION;
+    private static final String TAG = "MobileDataControl";
 
     public static void setMobileDataStatus(Context context, boolean enabled) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
