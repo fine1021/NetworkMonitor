@@ -130,14 +130,14 @@ public class MonitorService extends Service {
         }
     }
 
-    private void setMobileDataEnable(Context context) {
+    private synchronized void setMobileDataEnable(Context context) {
         boolean isOpen = MobileDataControl.getMobileDataStatus(context);
         if (!isOpen) {
             MobileDataControl.setMobileDataStatus(context, true);
         }
     }
 
-    private void setMobileDataDisable(Context context) {
+    private synchronized void setMobileDataDisable(Context context) {
         boolean isOpen = MobileDataControl.getMobileDataStatus(context);
         if (isOpen) {
             MobileDataControl.setMobileDataStatus(context, false);
