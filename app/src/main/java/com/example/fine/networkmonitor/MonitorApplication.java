@@ -2,6 +2,7 @@ package com.example.fine.networkmonitor;
 
 import android.app.Application;
 import android.os.Environment;
+import android.util.Log;
 
 import com.yxkang.android.exception.CrashHandler;
 
@@ -16,28 +17,34 @@ import de.mindpipe.android.logging.log4j.LogConfigurator;
  */
 public class MonitorApplication extends Application {
 
+    private static final String TAG = "MonitorApplication";
     private static MonitorApplication instance = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
-        initLog4j();
-        CrashHandler handler = CrashHandler.getInstance();
-        handler.init(this);
+        configureLog(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED));
+        CrashHandler.getInstance().init(this);
     }
 
-    private void initLog4j() {
+    public void configureLog(boolean SDCardExist) {
         String fileName = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
                 getPackageName() + File.separator + "log" + File.separator + "track.log";
-        LogConfigurator logConfigurator = new LogConfigurator();
-        logConfigurator.setFileName(fileName);
-        logConfigurator.setRootLevel(Level.DEBUG);
-        logConfigurator.setLevel("org.apache", Level.ERROR);
-        logConfigurator.setFilePattern("%d %-5p [%c{2}]-[%L] %m%n");
-        logConfigurator.setMaxFileSize(1024 * 1024 * 5);
-        logConfigurator.setImmediateFlush(true);
-        logConfigurator.configure();
+        try {
+            LogConfigurator logConfigurator = new LogConfigurator();
+            logConfigurator.setResetConfiguration(true);
+            logConfigurator.setFileName(fileName);
+            logConfigurator.setRootLevel(Level.DEBUG);
+            logConfigurator.setLevel("org.apache", Level.ERROR);
+            logConfigurator.setFilePattern("%d %-5p [%c{2}]-[%L] %m%n");
+            logConfigurator.setMaxFileSize(1024 * 1024 * 5);
+            logConfigurator.setUseFileAppender(SDCardExist);
+            logConfigurator.setImmediateFlush(true);
+            logConfigurator.configure();
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+        }
     }
 
     public static MonitorApplication getInstance() {
