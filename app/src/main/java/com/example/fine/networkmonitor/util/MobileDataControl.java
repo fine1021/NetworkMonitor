@@ -1,12 +1,17 @@
 package com.example.fine.networkmonitor.util;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.yxkang.android.util.RootUtil;
+
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -21,8 +26,7 @@ public class MobileDataControl {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             setMobileDataEnabled(context, enabled);
         } else {
-            // setDataEnabled(context, enabled);
-            Log.w(TAG, "not supported yet !");
+            setDataEnabled(context, enabled);
         }
     }
 
@@ -77,20 +81,50 @@ public class MobileDataControl {
         return isOpen;
     }
 
+    /**
+     * root command su -c 'service call phone 83 i32 1'
+     *
+     * @param context context
+     * @param enabled if enable the mobile data enable
+     */
     private static void setDataEnabled(Context context, boolean enabled) {
-        TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        try {
-            Class<?> cls = manager.getClass();
-            Method method = cls.getDeclaredMethod("setDataEnabled", boolean.class);
-            method.setAccessible(true);
-            method.invoke(manager, enabled);
-            Log.d(TAG, "setDataEnabled = " + enabled);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        boolean system = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) > 0;
+        if (system) {
+            TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            try {
+                Class<?> cls = manager.getClass();
+                Method method = cls.getDeclaredMethod("setDataEnabled", boolean.class);
+                method.setAccessible(true);
+                method.invoke(manager, enabled);
+                Log.d(TAG, "setDataEnabled = " + enabled);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (RootUtil.exeRootCommand("")) {
+                String transactionCode = getTransactionCode(context);
+                StringBuilder command = new StringBuilder();
+                command.append("su -c ");
+                command.append("service call phone ");
+                command.append(transactionCode).append(" ");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    SubscriptionManager manager = SubscriptionManager.from(context);
+                    int id = 0;
+                    if (manager.getActiveSubscriptionInfoCount() > 0)
+                        id = manager.getActiveSubscriptionInfoList().get(0).getSubscriptionId();
+                    command.append("i32 ");
+                    command.append(String.valueOf(id)).append(" ");
+                }
+                command.append("i32 ");
+                command.append(enabled ? "1" : "0");
+                RootUtil.exeRootCommand(command.toString());
+            } else {
+                Log.w(TAG, "only support a rooted phone !");
+            }
         }
     }
 
@@ -111,6 +145,28 @@ public class MobileDataControl {
             e.printStackTrace();
         }
         return isOpen;
+    }
+
+    private static String getTransactionCode(Context context) {
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            Class<?> telephonyManagerClass = Class.forName(telephonyManager.getClass().getName());
+            Method getITelephonyMethod = telephonyManagerClass.getDeclaredMethod("getITelephony");
+            getITelephonyMethod.setAccessible(true);
+            Object ITelephonyStub = getITelephonyMethod.invoke(telephonyManager);
+            Class ITelephonyClass = Class.forName(ITelephonyStub.getClass().getName());
+            Class stub = ITelephonyClass.getDeclaringClass();
+            Field field = stub.getDeclaredField("TRANSACTION_setDataEnabled");
+            field.setAccessible(true);
+            return String.valueOf(field.getInt(null));
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1)
+                return "86";
+            else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP)
+                return "83";
+        }
+        return "";
     }
 }
 

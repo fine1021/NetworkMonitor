@@ -17,6 +17,11 @@ import com.example.fine.networkmonitor.util.MobileDataControl;
 import com.example.fine.networkmonitor.util.NetworkConstants;
 import com.yxkang.android.os.WeakReferenceHandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * MonitorService
  */
@@ -26,11 +31,13 @@ public class MonitorService extends Service {
 
     private static final int FLAG_OFF = 0x02;
 
-    public static final String TAG = "MonitorService";
+    private static final String TAG = "MonitorService";
 
     private static final long sInterval = 3000;
 
     public static final String ServiceName = MonitorService.class.getName();
+
+    private static final Logger logger = LoggerFactory.getLogger(MonitorService.class);
 
     private BroadcastReceiver networkReceiver = new BroadcastReceiver() {
 
@@ -58,7 +65,11 @@ public class MonitorService extends Service {
                         }
                     } else {
                         isWifiConnected = false;
-                        mHandler.postDelayed(runnable, sInterval);
+                        if (!isLoop.get()) {
+                            logger.info("start loop handler------------> detection of network");
+                            isLoop.set(true);
+                            mHandler.postDelayed(runnable, sInterval);
+                        }
                     }
                     break;
                 case NetworkConstants.ACTION_PRECISE_DATA_CONNECTION_STATE_CHANGED:
@@ -87,6 +98,8 @@ public class MonitorService extends Service {
 
     private final MainHandler mHandler = new MainHandler(this);
 
+    private final AtomicBoolean isLoop = new AtomicBoolean(false);
+
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
@@ -107,6 +120,10 @@ public class MonitorService extends Service {
         if (networkInfo == null) {
             setMobileData(this);
             mHandler.postDelayed(runnable, sInterval);
+        } else {
+            isLoop.set(false);
+            Log.i(TAG, "checkNetworkState----------> end of waiting");
+            logger.info("stop loop handler------------> end of detection");
         }
     }
 
@@ -122,8 +139,8 @@ public class MonitorService extends Service {
     private synchronized void setMobileData(Context context) {
         int networkType = telephonyManager.getNetworkType();
         int networkClass = getNetworkClass(networkType);
-        Log.i(TAG, "adjust networkType = " + networkType + " | " + "networkClass = " + networkClass);
-        if (networkClass < NetworkConstants.NETWORK_CLASS_3_G) {
+        Log.i(TAG, "networkType = " + networkType + " | " + "networkClass = " + networkClass);
+        if (networkClass < NetworkConstants.NETWORK_CLASS_3G) {
             setMobileDataDisable(context);
         } else {
             setMobileDataEnable(context);
@@ -152,7 +169,7 @@ public class MonitorService extends Service {
             case NetworkConstants.NETWORK_TYPE_CDMA:
             case NetworkConstants.NETWORK_TYPE_1xRTT:
             case NetworkConstants.NETWORK_TYPE_IDEN:
-                return NetworkConstants.NETWORK_CLASS_2_G;
+                return NetworkConstants.NETWORK_CLASS_2G;
             case NetworkConstants.NETWORK_TYPE_UMTS:
             case NetworkConstants.NETWORK_TYPE_EVDO_0:
             case NetworkConstants.NETWORK_TYPE_EVDO_A:
@@ -163,10 +180,10 @@ public class MonitorService extends Service {
             case NetworkConstants.NETWORK_TYPE_EHRPD:
             case NetworkConstants.NETWORK_TYPE_HSPAP:
             case NetworkConstants.NETWORK_TYPE_TD_SCDMA:
-                return NetworkConstants.NETWORK_CLASS_3_G;
+                return NetworkConstants.NETWORK_CLASS_3G;
             case NetworkConstants.NETWORK_TYPE_LTE:
             case NetworkConstants.NETWORK_TYPE_IWLAN:
-                return NetworkConstants.NETWORK_CLASS_4_G;
+                return NetworkConstants.NETWORK_CLASS_4G;
             default:
                 return NetworkConstants.NETWORK_CLASS_UNKNOWN;
         }
@@ -192,10 +209,14 @@ public class MonitorService extends Service {
             @Override
             public void onDataConnectionStateChanged(int state, int networkType) {
                 super.onDataConnectionStateChanged(state, networkType);
-                Log.i(TAG, "listen state = " + state + " | " + "networkType = " + networkType);
-                adjustNetworkState();
+                logger.info("state = " + state + " | " + "networkType = " + networkType);
+                if (state == TelephonyManager.DATA_CONNECTED && getNetworkClass(networkType) == NetworkConstants.NETWORK_CLASS_2G) {
+                    logger.info("adjustNetworkState------------> current : 2g connected");
+                    adjustNetworkState();
+                }
             }
         }, PhoneStateListener.LISTEN_DATA_CONNECTION_STATE);
+        isLoop.set(false);
     }
 
     @Override
@@ -212,6 +233,14 @@ public class MonitorService extends Service {
             }
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        logger.info("onTaskRemoved");
+        mHandler.removeCallbacksAndMessages(null);
+        unregisterReceiver(networkReceiver);
     }
 
     @Override

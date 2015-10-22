@@ -92,15 +92,15 @@ public class NetworkConstants {
     /**
      * Class of broadly defined "2G" networks.
      */
-    public static final int NETWORK_CLASS_2_G = 2;
+    public static final int NETWORK_CLASS_2G = 2;
     /**
      * Class of broadly defined "3G" networks.
      */
-    public static final int NETWORK_CLASS_3_G = 3;
+    public static final int NETWORK_CLASS_3G = 3;
     /**
      * Class of broadly defined "4G" networks.
      */
-    public static final int NETWORK_CLASS_4_G = 4;
+    public static final int NETWORK_CLASS_4G = 4;
 
     /**
      * Broadcast Action: The data connection state has changed for any one of the
@@ -172,49 +172,22 @@ public class NetworkConstants {
      * Data connection state: Unknown.  Used before we know the state.
      */
     public static final int DATA_UNKNOWN = -1;
-    /**
-     * Data connection state: Disconnected. IP traffic not available.
-     */
-    public static final int DATA_DISCONNECTED = 0;
-    /**
-     * Data connection state: Currently setting up a data connection.
-     */
-    public static final int DATA_CONNECTING = 1;
-    /**
-     * Data connection state: Connected. IP traffic should be available.
-     */
-    public static final int DATA_CONNECTED = 2;
-    /**
-     * Data connection state: Suspended. The connection is up, but IP
-     * traffic is temporarily unavailable. For example, in a 2G network,
-     * data activity may be suspended when a voice call arrives.
-     */
-    public static final int DATA_SUSPENDED = 3;
-
-    /**
-     * PhoneConstants
-     */
-    private static final String STATE_KEY = "state";
-
-    private static final String DATA_NETWORK_TYPE_KEY = "networkType";
-
-    private static final String STATE_CHANGE_REASON_KEY = "reason";
 
     /**
      * The lookup key used with the {@link #ACTION_PRECISE_DATA_CONNECTION_STATE_CHANGED} broadcast
      * for an integer containing the state of the current data connection.
      *
      * @see #DATA_UNKNOWN
-     * @see #DATA_DISCONNECTED
-     * @see #DATA_CONNECTING
-     * @see #DATA_CONNECTED
-     * @see #DATA_SUSPENDED
+     * @see android.telephony.TelephonyManager#DATA_DISCONNECTED
+     * @see android.telephony.TelephonyManager#DATA_CONNECTING
+     * @see android.telephony.TelephonyManager#DATA_CONNECTED
+     * @see android.telephony.TelephonyManager#DATA_SUSPENDED
      * <p/>
      * <p class="note">
      * Retrieve with
      * {@link android.content.Intent#getIntExtra(String name, int defaultValue)}.
      */
-    public static final String EXTRA_DATA_STATE = STATE_KEY;
+    public static final String EXTRA_DATA_STATE = "state";
 
     /**
      * The lookup key used with the {@link #ACTION_PRECISE_DATA_CONNECTION_STATE_CHANGED} broadcast
@@ -241,7 +214,7 @@ public class NetworkConstants {
      * Retrieve with
      * {@link android.content.Intent#getIntExtra(String name, int defaultValue)}.
      */
-    public static final String EXTRA_DATA_NETWORK_TYPE = DATA_NETWORK_TYPE_KEY;
+    public static final String EXTRA_DATA_NETWORK_TYPE = "networkType";
 
     /**
      * The lookup key used with the {@link #ACTION_PRECISE_DATA_CONNECTION_STATE_CHANGED} broadcast
@@ -251,5 +224,5 @@ public class NetworkConstants {
      * Retrieve with
      * {@link android.content.Intent#getStringExtra(String name)}.
      */
-    public static final String EXTRA_DATA_CHANGE_REASON = STATE_CHANGE_REASON_KEY;
+    public static final String EXTRA_DATA_CHANGE_REASON = "reason";
 }
