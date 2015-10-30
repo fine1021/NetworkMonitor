@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     public static final String MOBILE_DATA = "mobile_data";
-    private SwitchCompat switchCompat;
+    private SwitchCompat switchCompat, switchCompat2;
     private TextView networkType, networkConnected;
 
     @Override
@@ -73,8 +73,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isOpen = MobileDataControl.getMobileDataStatus(MainActivity.this);
         switchCompat.setChecked(isOpen);
 
-
-        SwitchCompat switchCompat2 = (SwitchCompat) findViewById(R.id.networkMonitorSwitch);
+        switchCompat2 = (SwitchCompat) findViewById(R.id.monitorServiceSwitch);
         switchCompat2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -86,8 +85,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        boolean isAlive = ContextUtil.isServiceAlive(MainActivity.this, MonitorService.ServiceName);
-        switchCompat2.setChecked(isAlive);
+        SwitchCompat switchCompat3 = (SwitchCompat) findViewById(R.id.networkMonitorSwitch);
+        switchCompat3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                int isMonitor = com.yxkang.android.provider.Settings.Global.getInt(getContentResolver(), "monitor_service", 0);
+                boolean value = (isMonitor == 1);
+                if (value != isChecked) {
+                    Log.i(TAG, "setMonitorEnabled = " + isChecked);
+                    com.yxkang.android.provider.Settings.Global.putString(getContentResolver(), "monitor_service", isChecked ? "1" : "0");
+                }
+                if (switchCompat2 != null) {
+                    switchCompat2.setChecked(isChecked);
+                }
+            }
+        });
+
+        int isMonitor = com.yxkang.android.provider.Settings.Global.getInt(getContentResolver(), "monitor_service", 0);
+        switchCompat3.setChecked(isMonitor == 1);
 
         getContentResolver().registerContentObserver(Settings.Secure.getUriFor(MOBILE_DATA), false, observer);
         intentFilter.addAction(NetworkConstants.ACTION_CONNECTIVITY_CHANGED);

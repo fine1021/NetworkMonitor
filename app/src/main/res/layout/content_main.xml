@@ -34,10 +34,32 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/networkMonitor"
+        android:id="@+id/monitorService"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_below="@id/mobileData"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/monitor_service_switch"
+            android:textSize="18sp"/>
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/monitorServiceSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/networkMonitor"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/monitorService"
         android:orientation="horizontal">
 
         <TextView

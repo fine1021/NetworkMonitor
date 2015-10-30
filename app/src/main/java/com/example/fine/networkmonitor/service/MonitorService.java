@@ -198,6 +198,7 @@ public class MonitorService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate");
+        logger.info("MonitorService Create!");
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         intentFilter.addAction(NetworkConstants.ACTION_CONNECTIVITY_CHANGED);
