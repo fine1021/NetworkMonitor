@@ -210,7 +210,7 @@ public class MonitorService extends Service {
             @Override
             public void onDataConnectionStateChanged(int state, int networkType) {
                 super.onDataConnectionStateChanged(state, networkType);
-                logger.info("state = " + state + " | " + "networkType = " + networkType);
+                logger.info("state = {} , networkType = {}", state, networkType);
                 if (state == TelephonyManager.DATA_CONNECTED && getNetworkClass(networkType) == NetworkConstants.NETWORK_CLASS_2G) {
                     logger.info("adjustNetworkState------------> current : 2g connected");
                     adjustNetworkState();
