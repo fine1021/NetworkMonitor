@@ -34,9 +34,9 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.0'
-    compile 'com.android.support:design:23.1.0'
-    compile 'com.yxkang.android:support:0.0.6-beta3'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
+    compile 'com.yxkang.android:support:0.0.7'
     compile 'de.mindpipe.android:android-logging-log4j:1.0.3'
     compile 'log4j:log4j:1.2.17'
     compile 'org.slf4j:slf4j-api:1.7.12'

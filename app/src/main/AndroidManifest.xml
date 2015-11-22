@@ -32,9 +32,7 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".service.MonitorService"
-            android:process=":Monitor"/>
+        <service android:name=".service.MonitorService"/>
 
         <receiver android:name=".receiver.SDCardState">
             <intent-filter android:priority="1000">
@@ -51,8 +49,7 @@
         </receiver>
 
         <receiver
-            android:name=".receiver.BootReceiver"
-            android:process=":Monitor">
+            android:name=".receiver.BootReceiver">
             <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
